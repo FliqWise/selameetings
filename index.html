@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>קביעת פגישה - מערכת התראות אוטומטית</title>
+    <title>מערכת מעקב פגישות - דשבורד</title>
     <style>
         * {
             margin: 0;
@@ -13,202 +13,376 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f0f2f5;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             padding: 20px;
         }
 
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            max-width: 800px;
-            width: 100%;
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
             margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 10px;
+        .header h1 {
             font-size: 2.5em;
+            margin-bottom: 10px;
         }
 
-        .subtitle {
-            text-align: center;
-            color: #666;
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
             margin-bottom: 30px;
-            font-size: 1.2em;
         }
 
-        .calendly-container {
-            background: #f8f9fa;
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .today { color: #4CAF50; }
+        .week { color: #2196F3; }
+        .month { color: #FF9800; }
+        .total { color: #9C27B0; }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .calendly-wrapper {
+            background: white;
             border-radius: 15px;
             padding: 20px;
-            margin-bottom: 30px;
-            min-height: 700px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
 
-        .info-section {
-            background: #e8f4f8;
-            border-radius: 10px;
-            padding: 20px;
+        .meetings-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f2f5;
         }
 
-        .info-section h2 {
-            color: #2c3e50;
-            margin-bottom: 15px;
+        .panel-header h2 {
+            color: #333;
             font-size: 1.5em;
         }
 
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .feature-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+        .live-indicator {
             display: flex;
             align-items: center;
-        }
-
-        .feature-list li:last-child {
-            border-bottom: none;
-        }
-
-        .feature-list li:before {
-            content: "✅";
-            margin-left: 10px;
-            font-size: 1.2em;
-        }
-
-        .status-indicator {
-            background: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            text-align: center;
-            margin: 20px 0;
+            gap: 10px;
+            color: #4CAF50;
             font-weight: bold;
+        }
+
+        .live-dot {
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border-radius: 50%;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
         }
 
-        .debug-panel {
-            background: #f5f5f5;
-            border: 2px dashed #999;
+        .meeting-item {
+            background: #f8f9fa;
             border-radius: 10px;
             padding: 20px;
-            margin-top: 20px;
-            font-family: 'Courier New', monospace;
+            margin-bottom: 15px;
+            border-right: 5px solid #4CAF50;
+            animation: slideIn 0.5s ease;
         }
 
-        .debug-panel h3 {
-            color: #666;
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .meeting-item.new {
+            background: #e8f5e9;
+            border-right-color: #4CAF50;
+        }
+
+        .meeting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
         }
 
-        .debug-log {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            max-height: 200px;
-            overflow-y: auto;
+        .meeting-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .meeting-time {
+            color: #666;
             font-size: 0.9em;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2em;
-            color: #666;
+        .meeting-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9em;
         }
 
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #555;
         }
 
-        .success-message {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
+        .detail-item span {
             font-weight: bold;
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideDown 0.5s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -100%);
             }
-            h1 {
-                font-size: 2em;
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .summary-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .summary-item-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .summary-item-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .meeting-details {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🗓️ קביעת פגישה</h1>
-        <p class="subtitle">קבע פגישה וקבל התראה אוטומטית ב-WhatsApp</p>
-        
-        <div class="status-indicator">
-            🟢 המערכת פעילה ומוכנה לשליחת התראות
-        </div>
+    <div class="header">
+        <h1>📊 דשבורד מעקב פגישות</h1>
+        <p>מעקב בזמן אמת אחרי כל הפגישות שנקבעות</p>
+    </div>
 
-        <div class="info-section">
-            <h2>איך זה עובד?</h2>
-            <ul class="feature-list">
-                <li>בחר תאריך ושעה נוחים לך</li>
-                <li>מלא את הפרטים שלך</li>
-                <li>קבל אישור מיידי על קביעת הפגישה</li>
-                <li>קבל התראה אוטומטית ב-WhatsApp</li>
-            </ul>
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-label">פגישות היום</div>
+            <div class="stat-number today" id="today-count">0</div>
         </div>
+        <div class="stat-card">
+            <div class="stat-label">השבוע</div>
+            <div class="stat-number week" id="week-count">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">החודש</div>
+            <div class="stat-number month" id="month-count">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">סה"כ פגישות</div>
+            <div class="stat-number total" id="total-count">0</div>
+        </div>
+    </div>
 
-        <div class="calendly-container">
-            <div class="loading" id="loading-message">
-                ⏳ טוען את לוח הזמנים...
+    <div class="summary-section">
+        <h2>📈 סיכום נתונים</h2>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-item-label">שעה הכי פופולרית</div>
+                <div class="summary-item-value" id="popular-hour">-</div>
             </div>
+            <div class="summary-item">
+                <div class="summary-item-label">יום הכי עמוס</div>
+                <div class="summary-item-value" id="busiest-day">-</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-item-label">ממוצע פגישות ליום</div>
+                <div class="summary-item-value" id="avg-per-day">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-item-label">אחוז מילוי</div>
+                <div class="summary-item-value" id="fill-rate">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="calendly-wrapper">
+            <h2 style="margin-bottom: 20px;">📅 קביעת פגישה</h2>
             <!-- Calendly inline widget begin -->
             <div class="calendly-inline-widget" 
                  data-url="https://calendly.com/davide-selam/30min?hide_event_type_details=1&hide_gdpr_banner=1" 
-                 style="min-width:320px;height:700px;"
-                 id="calendly-widget">
+                 style="min-width:320px;height:630px;">
             </div>
             <!-- Calendly inline widget end -->
         </div>
 
-        <div id="message-container"></div>
-
-        <div class="debug-panel">
-            <h3>📊 מצב המערכת:</h3>
-            <div class="debug-log" id="debug-log">
-                <div>🔄 ממתין לקביעת פגישה...</div>
+        <div class="meetings-panel">
+            <div class="panel-header">
+                <h2>🗓️ פגישות אחרונות</h2>
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    <span>LIVE</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="exportData()">📥 ייצוא נתונים</button>
+                <button class="btn btn-secondary" onclick="clearOldMeetings()">🗑️ נקה ישנות</button>
+            </div>
+            <div id="meetings-list">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📅</div>
+                    <p>עדיין לא נקבעו פגישות</p>
+                    <p style="font-size: 0.9em; margin-top: 10px;">ברגע שמישהו יקבע פגישה, היא תופיע כאן</p>
+                </div>
             </div>
         </div>
     </div>
@@ -217,211 +391,247 @@
     <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
     
     <script>
-        // ===== הגדרות המערכת =====
-        // החלף את ה-URL הזה ב-Webhook URL שלך מ-Make.com
-        const WEBHOOK_URL = 'https://hook.eu2.make.com/YOUR_WEBHOOK_ID_HERE';
-        
-        // הגדרות נוספות
-        const DEBUG_MODE = true; // הצג הודעות debug
-        const RETRY_ATTEMPTS = 3; // מספר ניסיונות חוזרים במקרה של כשלון
-        const RETRY_DELAY = 2000; // המתנה בין ניסיונות (במילישניות)
+        // ===== אחסון נתונים מקומי =====
+        const STORAGE_KEY = 'calendly_meetings';
+        let meetings = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 
         // ===== פונקציות עזר =====
-        function log(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString('he-IL');
-            const logEntry = `[${timestamp}] ${message}`;
-            
-            if (DEBUG_MODE) {
-                console.log(logEntry);
-                const debugLog = document.getElementById('debug-log');
-                if (debugLog) {
-                    const entry = document.createElement('div');
-                    entry.textContent = logEntry;
-                    entry.style.color = type === 'error' ? '#c62828' : 
-                                       type === 'success' ? '#2e7d32' : '#333';
-                    debugLog.appendChild(entry);
-                    debugLog.scrollTop = debugLog.scrollHeight;
-                }
+        function saveMeetings() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(meetings));
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('he-IL') + ' ' + date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function isToday(date) {
+            const today = new Date();
+            return date.toDateString() === today.toDateString();
+        }
+
+        function isThisWeek(date) {
+            const now = new Date();
+            const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+            return date >= weekStart;
+        }
+
+        function isThisMonth(date) {
+            const now = new Date();
+            return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+        }
+
+        // ===== עדכון סטטיסטיקות =====
+        function updateStats() {
+            let todayCount = 0;
+            let weekCount = 0;
+            let monthCount = 0;
+
+            meetings.forEach(meeting => {
+                const date = new Date(meeting.scheduledTime);
+                if (isToday(date)) todayCount++;
+                if (isThisWeek(date)) weekCount++;
+                if (isThisMonth(date)) monthCount++;
+            });
+
+            document.getElementById('today-count').textContent = todayCount;
+            document.getElementById('week-count').textContent = weekCount;
+            document.getElementById('month-count').textContent = monthCount;
+            document.getElementById('total-count').textContent = meetings.length;
+
+            // עדכון נתונים נוספים
+            updateSummaryData();
+        }
+
+        // ===== עדכון נתונים מסכמים =====
+        function updateSummaryData() {
+            if (meetings.length === 0) {
+                document.getElementById('popular-hour').textContent = '-';
+                document.getElementById('busiest-day').textContent = '-';
+                document.getElementById('avg-per-day').textContent = '0';
+                document.getElementById('fill-rate').textContent = '0%';
+                return;
             }
+
+            // שעה פופולרית
+            const hours = {};
+            meetings.forEach(meeting => {
+                const hour = new Date(meeting.scheduledTime).getHours();
+                hours[hour] = (hours[hour] || 0) + 1;
+            });
+            const popularHour = Object.entries(hours).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('popular-hour').textContent = popularHour ? `${popularHour[0]}:00` : '-';
+
+            // יום עמוס
+            const days = {};
+            const dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+            meetings.forEach(meeting => {
+                const day = new Date(meeting.scheduledTime).getDay();
+                days[day] = (days[day] || 0) + 1;
+            });
+            const busiestDay = Object.entries(days).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('busiest-day').textContent = busiestDay ? dayNames[busiestDay[0]] : '-';
+
+            // ממוצע ליום
+            const daysWithMeetings = new Set(meetings.map(m => 
+                new Date(m.scheduledTime).toDateString()
+            )).size;
+            const avgPerDay = daysWithMeetings > 0 ? (meetings.length / daysWithMeetings).toFixed(1) : '0';
+            document.getElementById('avg-per-day').textContent = avgPerDay;
+
+            // אחוז מילוי (נניח 8 פגישות ליום מקסימום)
+            const fillRate = Math.min(100, (avgPerDay / 8 * 100)).toFixed(0);
+            document.getElementById('fill-rate').textContent = fillRate + '%';
         }
 
-        function showMessage(message, type = 'info') {
-            const container = document.getElementById('message-container');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
-            messageDiv.textContent = message;
-            container.innerHTML = '';
-            container.appendChild(messageDiv);
+        // ===== הצגת פגישות =====
+        function displayMeetings() {
+            const meetingsList = document.getElementById('meetings-list');
             
-            // הסר הודעה אחרי 10 שניות
+            if (meetings.length === 0) {
+                meetingsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <p>עדיין לא נקבעו פגישות</p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">ברגע שמישהו יקבע פגישה, היא תופיע כאן</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // מיון לפי תאריך - החדשות קודם
+            const sortedMeetings = [...meetings].sort((a, b) => 
+                new Date(b.scheduledTime) - new Date(a.scheduledTime)
+            );
+
+            // הצגת 10 הפגישות האחרונות
+            const recentMeetings = sortedMeetings.slice(0, 10);
+            
+            meetingsList.innerHTML = recentMeetings.map((meeting, index) => `
+                <div class="meeting-item ${index === 0 && isToday(new Date(meeting.scheduledTime)) ? 'new' : ''}">
+                    <div class="meeting-header">
+                        <div class="meeting-name">👤 ${meeting.name}</div>
+                        <div class="meeting-time">🕐 ${formatDate(meeting.scheduledTime)}</div>
+                    </div>
+                    <div class="meeting-details">
+                        <div class="detail-item">📧 <span>אימייל:</span> ${meeting.email}</div>
+                        <div class="detail-item">📱 <span>טלפון:</span> ${meeting.phone || 'לא סופק'}</div>
+                        <div class="detail-item">📍 <span>סוג פגישה:</span> ${meeting.eventType}</div>
+                        <div class="detail-item">⏱️ <span>משך:</span> ${meeting.duration} דקות</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ===== הוספת פגישה חדשה =====
+        function addMeeting(data) {
+            const meeting = {
+                id: Date.now(),
+                name: data.invitee.name,
+                email: data.invitee.email,
+                phone: data.invitee.phone || '',
+                scheduledTime: data.event.start_time,
+                eventType: data.event_type.name,
+                duration: data.event_type.duration,
+                createdAt: new Date().toISOString()
+            };
+
+            meetings.unshift(meeting);
+            saveMeetings();
+            
+            // עדכון התצוגה
+            updateStats();
+            displayMeetings();
+            
+            // הצגת התראה
+            showNotification(`✅ פגישה חדשה נקבעה עם ${meeting.name}!`);
+        }
+
+        // ===== הצגת התראה =====
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
             setTimeout(() => {
-                messageDiv.remove();
-            }, 10000);
+                notification.remove();
+            }, 5000);
         }
 
-        // ===== פונקציה לשליחת נתונים ל-Webhook =====
-        async function sendToWebhook(eventData, attempt = 1) {
-            log(`📤 מנסה לשלוח נתונים ל-Webhook (ניסיון ${attempt}/${RETRY_ATTEMPTS})`);
-            
-            try {
-                // בדיקה שיש URL
-                if (!WEBHOOK_URL || WEBHOOK_URL.includes('YOUR_WEBHOOK_ID_HERE')) {
-                    throw new Error('לא הוגדר Webhook URL תקין! עדכן את ה-URL בקוד.');
-                }
+        // ===== ייצוא נתונים =====
+        function exportData() {
+            if (meetings.length === 0) {
+                alert('אין נתונים לייצוא');
+                return;
+            }
 
-                // הכנת הנתונים לשליחה
-                const payload = {
-                    event: 'calendly.meeting_scheduled',
-                    timestamp: new Date().toISOString(),
-                    meeting_details: {
-                        name: eventData.invitee.name,
-                        email: eventData.invitee.email,
-                        phone: eventData.invitee.phone || 'לא סופק',
-                        scheduled_time: eventData.event.start_time,
-                        event_type: eventData.event_type.name,
-                        location: eventData.event.location || 'יתואם בהמשך',
-                        timezone: eventData.invitee.timezone,
-                        calendly_event_id: eventData.event.uuid,
-                        questions_answers: eventData.questions_and_answers || []
-                    },
-                    webhook_metadata: {
-                        source: 'calendly_widget',
-                        version: '1.0',
-                        sent_at: new Date().toISOString()
-                    }
-                };
+            const csv = [
+                ['שם', 'אימייל', 'טלפון', 'תאריך ושעה', 'סוג פגישה', 'משך'],
+                ...meetings.map(m => [
+                    m.name,
+                    m.email,
+                    m.phone || 'לא סופק',
+                    formatDate(m.scheduledTime),
+                    m.eventType,
+                    m.duration + ' דקות'
+                ])
+            ].map(row => row.join(',')).join('\n');
 
-                log('📋 נתונים שנשלחים:', 'info');
-                log(JSON.stringify(payload, null, 2), 'info');
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `meetings_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
 
-                // שליחת הבקשה
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(payload),
-                    mode: 'no-cors' // חשוב למניעת בעיות CORS
-                });
+            showNotification('📥 הנתונים יוצאו בהצלחה!');
+        }
 
-                // בדיקת תגובה
-                if (response.ok || response.status === 0) { // status 0 זה נורמלי ב-no-cors
-                    log('✅ הנתונים נשלחו בהצלחה!', 'success');
-                    showMessage('✅ ההתראה נשלחה בהצלחה! תקבל הודעת WhatsApp בקרוב.', 'success');
-                    return true;
-                } else {
-                    throw new Error(`שגיאת שרת: ${response.status}`);
-                }
+        // ===== ניקוי פגישות ישנות =====
+        function clearOldMeetings() {
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-            } catch (error) {
-                log(`❌ שגיאה בשליחה: ${error.message}`, 'error');
-                
-                // ניסיון חוזר
-                if (attempt < RETRY_ATTEMPTS) {
-                    log(`⏳ ממתין ${RETRY_DELAY/1000} שניות לפני ניסיון חוזר...`, 'info');
-                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-                    return sendToWebhook(eventData, attempt + 1);
-                } else {
-                    showMessage('❌ לא הצלחנו לשלוח את ההתראה. אנא צור קשר עם התמיכה.', 'error');
-                    return false;
-                }
+            const oldCount = meetings.length;
+            meetings = meetings.filter(m => new Date(m.scheduledTime) > oneMonthAgo);
+            const removedCount = oldCount - meetings.length;
+
+            if (removedCount > 0) {
+                saveMeetings();
+                updateStats();
+                displayMeetings();
+                showNotification(`🗑️ ${removedCount} פגישות ישנות נמחקו`);
+            } else {
+                showNotification('אין פגישות ישנות למחיקה');
             }
         }
 
         // ===== האזנה לאירועי Calendly =====
-        function initializeCalendlyListener() {
-            log('🔍 מאתחל מאזין לאירועי Calendly...');
-
-            // האזנה לאירועים מ-Calendly
-            window.addEventListener('message', async function(event) {
-                // בדיקת מקור ההודעה
-                if (event.origin !== 'https://calendly.com') {
-                    return;
-                }
-
-                try {
-                    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                    
-                    // בדיקה אם זה אירוע קביעת פגישה
-                    if (data.event === 'calendly.event_scheduled') {
-                        log('🎉 זוהתה קביעת פגישה חדשה!', 'success');
-                        
-                        // הצגת פרטי הפגישה
-                        log(`👤 שם: ${data.payload.invitee.name}`);
-                        log(`📧 אימייל: ${data.payload.invitee.email}`);
-                        log(`📅 זמן: ${new Date(data.payload.event.start_time).toLocaleString('he-IL')}`);
-                        
-                        // שליחה ל-Webhook
-                        await sendToWebhook(data.payload);
-                    }
-                    
-                    // אירועים נוספים של Calendly
-                    if (data.event === 'calendly.loaded') {
-                        log('✅ Calendly נטען בהצלחה', 'success');
-                        document.getElementById('loading-message').style.display = 'none';
-                    }
-                    
-                    if (data.event === 'calendly.event_type_viewed') {
-                        log('👀 המשתמש צופה בלוח הזמנים');
-                    }
-                    
-                    if (data.event === 'calendly.date_and_time_selected') {
-                        log('📅 המשתמש בחר תאריך ושעה');
-                    }
-
-                } catch (error) {
-                    log(`⚠️ שגיאה בעיבוד הודעה: ${error.message}`, 'error');
-                }
-            });
-
-            log('✅ מאזין לאירועים פעיל ומוכן');
-        }
-
-        // ===== בדיקת תקינות המערכת =====
-        function systemCheck() {
-            log('🔧 מבצע בדיקת מערכת...');
+        window.addEventListener('message', function(event) {
+            if (event.origin !== 'https://calendly.com') return;
             
-            // בדיקת Webhook URL
-            if (!WEBHOOK_URL || WEBHOOK_URL.includes('YOUR_WEBHOOK_ID_HERE')) {
-                log('⚠️ אזהרה: לא הוגדר Webhook URL!', 'error');
-                showMessage('⚠️ המערכת לא מוגדרת כראוי. פנה למנהל המערכת.', 'error');
-                return false;
+            try {
+                const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                
+                if (data.event === 'calendly.event_scheduled') {
+                    console.log('🎉 פגישה חדשה נקבעה!', data.payload);
+                    addMeeting(data.payload);
+                }
+            } catch (error) {
+                console.error('Error processing Calendly event:', error);
             }
-            
-            // בדיקת Calendly
-            if (!window.Calendly) {
-                log('⏳ ממתין לטעינת Calendly...', 'info');
-                setTimeout(systemCheck, 1000);
-                return false;
-            }
-            
-            log('✅ כל הבדיקות עברו בהצלחה', 'success');
-            return true;
-        }
-
-        // ===== הפעלת המערכת =====
-        document.addEventListener('DOMContentLoaded', function() {
-            log('🚀 המערכת מתחילה לפעול...');
-            
-            // אתחול מאזין אירועים
-            initializeCalendlyListener();
-            
-            // בדיקת מערכת
-            setTimeout(systemCheck, 2000);
-            
-            // רענון אוטומטי של הwidget במקרה של בעיה
-            setTimeout(() => {
-                if (document.getElementById('loading-message').style.display !== 'none') {
-                    log('⚠️ הטעינה לוקחת זמן רב, מרענן...', 'error');
-                    window.location.reload();
-                }
-            }, 30000);
         });
 
-        // ===== טיפול בשגיאות גלובליות =====
-        window.addEventListener('error', function(event) {
-            log(`❌ שגיאה גלובלית: ${event.message}`, 'error');
+        // ===== אתחול =====
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            displayMeetings();
+            
+            // רענון אוטומטי כל 30 שניות
+            setInterval(() => {
+                updateStats();
+                displayMeetings();
+            }, 30000);
         });
     </script>
 </body>
