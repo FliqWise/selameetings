@@ -3,914 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת מעקב פגישות מקצועית</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <title>קביעת פגישה - מערכת התראות אוטומטית</title>
     <style>
-        .pulse-green { animation: pulse-green 2s infinite; }
-        @keyframes pulse-green {
-            0%, 100% { background-color: #10b981; }
-            50% { background-color: #059669; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .slide-up { animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .gradient-bg {
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .calendly-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            min-height: 700px;
+        }
+
+        .info-section {
+            background: #e8f4f8;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li:before {
+            content: "✅";
+            margin-left: 10px;
+            font-size: 1.2em;
+        }
+
+        .status-indicator {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+
+        .debug-panel {
+            background: #f5f5f5;
+            border: 2px dashed #999;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .debug-panel h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .debug-log {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    
-    <!-- Header -->
-    <div class="gradient-bg text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <div class="text-4xl">📅</div>
-                    <div>
-                        <h1 class="text-3xl font-bold">מערכת מעקב פגישות</h1>
-                        <p class="text-blue-100 mt-1">כלי מלא ליצירת לינקים מעוקבים ומעקב אחר פגישות</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <div id="liveStatus" class="flex items-center px-3 py-2 bg-white/20 rounded-lg text-sm">
-                        <div class="w-2 h-2 bg-green-400 rounded-full pulse-green ml-1"></div>
-                        <span>מערכת פעילה</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<body>
+    <div class="container">
+        <h1>🗓️ קביעת פגישה</h1>
+        <p class="subtitle">קבע פגישה וקבל התראה אוטומטית ב-WhatsApp</p>
         
-        <!-- Navigation Tabs -->
-        <div class="bg-white rounded-lg shadow-sm border mb-8">
-            <div class="flex border-b">
-                <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-button active flex-1 px-6 py-4 text-center font-medium border-b-2 border-blue-600 text-blue-600">
-                    📊 דשבורד
-                </button>
-                <button onclick="showTab('generator')" id="tab-generator" class="tab-button flex-1 px-6 py-4 text-center font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-                    🔗 יצירת לינקים
-                </button>
-                <button onclick="showTab('agents')" id="tab-agents" class="tab-button flex-1 px-6 py-4 text-center font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-                    👥 ניהול סוכנים
-                </button>
-                <button onclick="showTab('meetings')" id="tab-meetings" class="tab-button flex-1 px-6 py-4 text-center font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-                    📋 פגישות
-                </button>
-                <button onclick="showTab('debug')" id="tab-debug" class="tab-button flex-1 px-6 py-4 text-center font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-                    🔧 Debug
-                </button>
-            </div>
+        <div class="status-indicator">
+            🟢 המערכת פעילה ומוכנה לשליחת התראות
         </div>
 
-        <!-- Dashboard Tab -->
-        <div id="dashboard-content" class="tab-content">
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-center">
-                        <div class="text-3xl mr-4">📅</div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">סך פגישות</p>
-                            <p id="total-meetings" class="text-2xl font-bold text-gray-900">0</p>
-                            <p class="text-xs text-green-600">↑ מהשבוע שעבר</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-center">
-                        <div class="text-3xl mr-4">✅</div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">מאושרות</p>
-                            <p id="confirmed-meetings" class="text-2xl font-bold text-green-900">0</p>
-                            <p class="text-xs text-green-600">שיעור הצלחה</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-center">
-                        <div class="text-3xl mr-4">👥</div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">סוכנים פעילים</p>
-                            <p id="active-agents" class="text-2xl font-bold text-blue-900">0</p>
-                            <p class="text-xs text-blue-600">מחוברים</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-center">
-                        <div class="text-3xl mr-4">🔗</div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">לינקים מעוקבים</p>
-                            <p id="tracked-links" class="text-2xl font-bold text-purple-900">0</p>
-                            <p class="text-xs text-purple-600">שנוצרו</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="bg-white rounded-lg shadow-sm border">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">פעילות אחרונה</h3>
-                </div>
-                <div id="recent-activity" class="p-6">
-                    <div class="text-center py-8 text-gray-500">
-                        <div class="text-4xl mb-2">📭</div>
-                        <p>אין פעילות עדיין</p>
-                        <p class="text-sm mt-1">צור לינק מעוקב כדי להתחיל</p>
-                    </div>
-                </div>
-            </div>
+        <div class="info-section">
+            <h2>איך זה עובד?</h2>
+            <ul class="feature-list">
+                <li>בחר תאריך ושעה נוחים לך</li>
+                <li>מלא את הפרטים שלך</li>
+                <li>קבל אישור מיידי על קביעת הפגישה</li>
+                <li>קבל התראה אוטומטית ב-WhatsApp</li>
+            </ul>
         </div>
 
-        <!-- Link Generator Tab -->
-        <div id="generator-content" class="tab-content hidden">
-            <div class="bg-white rounded-lg shadow-sm border p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                    <span class="text-2xl mr-3">🔗</span>
-                    יצירת לינק מעוקב
-                </h2>
-
-                <form id="link-generator-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                לינק קלנדלי מקורי *
-                            </label>
-                            <input 
-                                type="url" 
-                                id="original-link" 
-                                placeholder="https://calendly.com/your-name"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                required
-                            />
-                            <p class="text-xs text-gray-500 mt-1">הדבק כאן את הלינק שקיבלת מהסוכן</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                בחר סוכן
-                            </label>
-                            <select id="agent-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">בחר סוכן קיים או צור חדש</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                זיהוי סוכן (באנגלית) *
-                            </label>
-                            <input 
-                                type="text" 
-                                id="agent-id" 
-                                placeholder="agent_moshe"
-                                pattern="[a-zA-Z0-9_]+"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                            <p class="text-xs text-gray-500 mt-1">רק אותיות באנגלית, מספרים ו-_</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                שם הסוכן (לתצוגה)
-                            </label>
-                            <input 
-                                type="text" 
-                                id="agent-name" 
-                                placeholder="משה לוי"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                מקור הפנייה
-                            </label>
-                            <select id="lead-source" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="direct">ישיר</option>
-                                <option value="facebook">Facebook</option>
-                                <option value="google">Google Ads</option>
-                                <option value="instagram">Instagram</option>
-                                <option value="whatsapp">WhatsApp</option>
-                                <option value="referral">הפניה</option>
-                                <option value="website">אתר</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                קמפיין (אופציונלי)
-                            </label>
-                            <input 
-                                type="text" 
-                                id="campaign" 
-                                placeholder="summer_2025, ppc_leads"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="flex justify-center">
-                        <button 
-                            type="submit"
-                            class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-lg flex items-center"
-                        >
-                            <span class="text-xl mr-2">🚀</span>
-                            צור לינק מעוקב
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Generated Link Result -->
-                <div id="generated-result" class="hidden mt-8 p-6 bg-green-50 border border-green-200 rounded-lg">
-                    <h3 class="text-lg font-medium text-green-900 mb-4 flex items-center">
-                        <span class="text-xl mr-2">✅</span>
-                        לינק מעוקב נוצר בהצלחה!
-                    </h3>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-green-800 mb-2">הלינק המעוקב שלך:</label>
-                            <div class="flex">
-                                <input 
-                                    type="text" 
-                                    id="tracked-link-result" 
-                                    readonly 
-                                    class="flex-1 px-3 py-2 bg-white border border-green-300 rounded-r-md text-sm"
-                                />
-                                <button 
-                                    onclick="copyToClipboard('tracked-link-result')"
-                                    class="px-4 py-2 bg-green-600 text-white rounded-l-md hover:bg-green-700 flex items-center"
-                                >
-                                    📋 העתק
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-md p-4 border border-green-200">
-                            <h4 class="font-medium text-green-900 mb-2">מה עכשיו?</h4>
-                            <ol class="text-sm text-green-800 space-y-1 list-decimal list-inside">
-                                <li>העתק את הלינק המעוקב</li>
-                                <li>שלח אותו לחברת הפניות או ללקוח</li>
-                                <li>כשמישהו יקבע פגישה - תראה את זה כאן</li>
-                                <li>עקוב אחר התוצאות בטאב "פגישות"</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
+        <div class="calendly-container">
+            <div class="loading" id="loading-message">
+                ⏳ טוען את לוח הזמנים...
             </div>
+            <!-- Calendly inline widget begin -->
+            <div class="calendly-inline-widget" 
+                 data-url="https://calendly.com/davide-selam/30min?hide_event_type_details=1&hide_gdpr_banner=1" 
+                 style="min-width:320px;height:700px;"
+                 id="calendly-widget">
+            </div>
+            <!-- Calendly inline widget end -->
         </div>
 
-        <!-- Agents Management Tab -->
-        <div id="agents-content" class="tab-content hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                
-                <!-- Add Agent Form -->
-                <div class="bg-white rounded-lg shadow-sm border p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                        <span class="text-2xl mr-3">👤</span>
-                        הוסף סוכן חדש
-                    </h2>
+        <div id="message-container"></div>
 
-                    <form id="agent-form" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">שם הסוכן *</label>
-                            <input 
-                                type="text" 
-                                id="new-agent-name" 
-                                placeholder="משה לוי"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">זיהוי סוכן *</label>
-                            <input 
-                                type="text" 
-                                id="new-agent-id" 
-                                placeholder="agent_moshe"
-                                pattern="[a-zA-Z0-9_]+"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">לינק קלנדלי *</label>
-                            <input 
-                                type="url" 
-                                id="new-agent-calendly" 
-                                placeholder="https://calendly.com/moshe-levy"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">טלפון (אופציונלי)</label>
-                            <input 
-                                type="tel" 
-                                id="new-agent-phone" 
-                                placeholder="052-123-4567"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <button 
-                            type="submit"
-                            class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
-                        >
-                            ➕ הוסף סוכן
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Agents List -->
-                <div class="bg-white rounded-lg shadow-sm border p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center justify-between">
-                        <span class="flex items-center">
-                            <span class="text-2xl mr-3">👥</span>
-                            רשימת סוכנים
-                        </span>
-                        <span id="agents-count" class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">0</span>
-                    </h2>
-
-                    <div id="agents-list" class="space-y-3">
-                        <div class="text-center py-8 text-gray-500">
-                            <div class="text-4xl mb-2">👤</div>
-                            <p>אין סוכנים עדיין</p>
-                            <p class="text-sm mt-1">הוסף סוכן ראשון כדי להתחיל</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Meetings Tab -->
-        <div id="meetings-content" class="tab-content hidden">
-            <div class="bg-white rounded-lg shadow-sm border">
-                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
-                        <span class="text-2xl mr-3">📋</span>
-                        רשימת פגישות
-                    </h2>
-                    <div class="flex items-center space-x-4 space-x-reverse">
-                        <select id="meeting-filter" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
-                            <option value="all">כל הפגישות</option>
-                            <option value="scheduled">מתוכננות</option>
-                            <option value="completed">הושלמו</option>
-                            <option value="cancelled">בוטלו</option>
-                        </select>
-                        <button onclick="refreshMeetings()" class="px-3 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 text-sm">
-                            🔄 רענן
-                        </button>
-                    </div>
-                </div>
-
-                <div id="meetings-table" class="overflow-x-auto">
-                    <div class="text-center py-12 text-gray-500">
-                        <div class="text-4xl mb-2">📅</div>
-                        <p>אין פגישות עדיין</p>
-                        <p class="text-sm mt-1">פגישות יופיעו כאן כשלקוחות יקבעו אותן</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Debug Tab -->
-        <div id="debug-content" class="tab-content hidden">
-            <div class="space-y-6">
-                
-                <!-- System Status -->
-                <div class="bg-white rounded-lg shadow-sm border p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                        <span class="text-2xl mr-3">🔧</span>
-                        סטטוס המערכת
-                    </h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div id="local-storage-status" class="status-indicator status-success">
-                            <span class="text-lg mr-2">💾</span>
-                            <span>Local Storage - פועל</span>
-                        </div>
-                        <div id="calendly-connection" class="status-indicator status-warning">
-                            <span class="text-lg mr-2">🔗</span>
-                            <span>Calendly - לא מחובר</span>
-                        </div>
-                        <div id="webhook-status" class="status-indicator status-error">
-                            <span class="text-lg mr-2">📡</span>
-                            <span>Webhook - לא פעיל</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Instructions -->
-                <div class="bg-white rounded-lg shadow-sm border p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">הוראות הגדרה</h3>
-                    
-                    <div class="space-y-4">
-                        <div class="border-r-4 border-blue-500 pl-4">
-                            <h4 class="font-medium text-gray-900">1. מצב נוכחי - Demo Mode</h4>
-                            <p class="text-sm text-gray-600 mt-1">
-                                המערכת עובדת כרגע במצב Demo עם נתונים מקומיים. 
-                                הלינקים נוצרים אבל אין מעקב אמיתי אחר פגישות.
-                            </p>
-                        </div>
-
-                        <div class="border-r-4 border-yellow-500 pl-4">
-                            <h4 class="font-medium text-gray-900">2. להפעלה מלאה צריך:</h4>
-                            <ul class="text-sm text-gray-600 mt-1 space-y-1 list-disc list-inside">
-                                <li>שרת לקבלת Webhooks מקלנדלי</li>
-                                <li>בסיס נתונים לשמירת פגישות</li>
-                                <li>הגדרת Webhook ב-Calendly</li>
-                            </ul>
-                        </div>
-
-                        <div class="border-r-4 border-green-500 pl-4">
-                            <h4 class="font-medium text-gray-900">3. מה עובד עכשיו:</h4>
-                            <ul class="text-sm text-gray-600 mt-1 space-y-1 list-disc list-inside">
-                                <li>יצירת לינקים מעוקבים ✅</li>
-                                <li>ניהול סוכנים ✅</li>
-                                <li>ממשק מקצועי ✅</li>
-                                <li>שמירה מקומית ✅</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Test Tools -->
-                <div class="bg-white rounded-lg shadow-sm border p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">כלי בדיקה</h3>
-                    
-                    <div class="space-y-4">
-                        <button onclick="simulateMeeting()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                            🧪 סימולציה של פגישה חדשה
-                        </button>
-                        
-                        <button onclick="clearAllData()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                            🗑️ מחק את כל הנתונים
-                        </button>
-                        
-                        <button onclick="exportData()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                            📥 ייצא נתונים
-                        </button>
-                    </div>
-                </div>
+        <div class="debug-panel">
+            <h3>📊 מצב המערכת:</h3>
+            <div class="debug-log" id="debug-log">
+                <div>🔄 ממתין לקביעת פגישה...</div>
             </div>
         </div>
     </div>
 
+    <!-- Calendly Script -->
+    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+    
     <script>
-        // Global variables
-        let agents = JSON.parse(localStorage.getItem('meeting_tracker_agents') || '[]');
-        let meetings = JSON.parse(localStorage.getItem('meeting_tracker_meetings') || '[]');
-        let trackedLinks = JSON.parse(localStorage.getItem('meeting_tracker_links') || '[]');
+        // ===== הגדרות המערכת =====
+        // החלף את ה-URL הזה ב-Webhook URL שלך מ-Make.com
+        const WEBHOOK_URL = 'https://hook.eu2.make.com/YOUR_WEBHOOK_ID_HERE';
+        
+        // הגדרות נוספות
+        const DEBUG_MODE = true; // הצג הודעות debug
+        const RETRY_ATTEMPTS = 3; // מספר ניסיונות חוזרים במקרה של כשלון
+        const RETRY_DELAY = 2000; // המתנה בין ניסיונות (במילישניות)
 
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDashboard();
-            updateAgentsList();
-            updateAgentSelect();
-            updateMeetingsTable();
-        });
-
-        // Tab management
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
+        // ===== פונקציות עזר =====
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('he-IL');
+            const logEntry = `[${timestamp}] ${message}`;
             
-            // Remove active class from all tab buttons
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('border-blue-600', 'text-blue-600');
-                button.classList.add('border-transparent', 'text-gray-500');
-            });
-            
-            // Show selected tab
-            document.getElementById(`${tabName}-content`).classList.remove('hidden');
-            document.getElementById(`${tabName}-content`).classList.add('slide-up');
-            
-            // Activate selected tab button
-            const activeButton = document.getElementById(`tab-${tabName}`);
-            activeButton.classList.add('border-blue-600', 'text-blue-600');
-            activeButton.classList.remove('border-transparent', 'text-gray-500');
+            if (DEBUG_MODE) {
+                console.log(logEntry);
+                const debugLog = document.getElementById('debug-log');
+                if (debugLog) {
+                    const entry = document.createElement('div');
+                    entry.textContent = logEntry;
+                    entry.style.color = type === 'error' ? '#c62828' : 
+                                       type === 'success' ? '#2e7d32' : '#333';
+                    debugLog.appendChild(entry);
+                    debugLog.scrollTop = debugLog.scrollHeight;
+                }
+            }
         }
 
-        // Link generator form
-        document.getElementById('link-generator-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            generateTrackedLink();
-        });
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('message-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+            container.innerHTML = '';
+            container.appendChild(messageDiv);
+            
+            // הסר הודעה אחרי 10 שניות
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 10000);
+        }
 
-        function generateTrackedLink() {
-            const originalLink = document.getElementById('original-link').value;
-            const agentId = document.getElementById('agent-id').value;
-            const agentName = document.getElementById('agent-name').value;
-            const leadSource = document.getElementById('lead-source').value;
-            const campaign = document.getElementById('campaign').value;
-
-            if (!originalLink || !agentId) {
-                alert('נדרש לינק מקורי וזיהוי סוכן');
-                return;
-            }
-
+        // ===== פונקציה לשליחת נתונים ל-Webhook =====
+        async function sendToWebhook(eventData, attempt = 1) {
+            log(`📤 מנסה לשלוח נתונים ל-Webhook (ניסיון ${attempt}/${RETRY_ATTEMPTS})`);
+            
             try {
-                const url = new URL(originalLink);
-                
-                // Add tracking parameters
-                url.searchParams.set('agent_id', agentId);
-                if (agentName) url.searchParams.set('agent_name', agentName);
-                url.searchParams.set('source', leadSource);
-                if (campaign) url.searchParams.set('campaign', campaign);
-                url.searchParams.set('tracking', 'enabled');
-                url.searchParams.set('created', Date.now().toString());
+                // בדיקה שיש URL
+                if (!WEBHOOK_URL || WEBHOOK_URL.includes('YOUR_WEBHOOK_ID_HERE')) {
+                    throw new Error('לא הוגדר Webhook URL תקין! עדכן את ה-URL בקוד.');
+                }
 
-                const trackedLink = url.toString();
-                
-                // Save tracked link
-                const linkData = {
-                    id: Date.now().toString(),
-                    originalLink,
-                    trackedLink,
-                    agentId,
-                    agentName,
-                    leadSource,
-                    campaign,
-                    createdAt: new Date().toISOString(),
-                    clicks: 0
+                // הכנת הנתונים לשליחה
+                const payload = {
+                    event: 'calendly.meeting_scheduled',
+                    timestamp: new Date().toISOString(),
+                    meeting_details: {
+                        name: eventData.invitee.name,
+                        email: eventData.invitee.email,
+                        phone: eventData.invitee.phone || 'לא סופק',
+                        scheduled_time: eventData.event.start_time,
+                        event_type: eventData.event_type.name,
+                        location: eventData.event.location || 'יתואם בהמשך',
+                        timezone: eventData.invitee.timezone,
+                        calendly_event_id: eventData.event.uuid,
+                        questions_answers: eventData.questions_and_answers || []
+                    },
+                    webhook_metadata: {
+                        source: 'calendly_widget',
+                        version: '1.0',
+                        sent_at: new Date().toISOString()
+                    }
                 };
-                
-                trackedLinks.push(linkData);
-                localStorage.setItem('meeting_tracker_links', JSON.stringify(trackedLinks));
 
-                // Show result
-                document.getElementById('tracked-link-result').value = trackedLink;
-                document.getElementById('generated-result').classList.remove('hidden');
-                document.getElementById('generated-result').classList.add('slide-up');
+                log('📋 נתונים שנשלחים:', 'info');
+                log(JSON.stringify(payload, null, 2), 'info');
 
-                // Update dashboard
-                updateDashboard();
-                
-                // Add to recent activity
-                addToRecentActivity(`נוצר לינק מעוקב עבור ${agentName || agentId}`, 'success');
+                // שליחת הבקשה
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    mode: 'no-cors' // חשוב למניעת בעיות CORS
+                });
+
+                // בדיקת תגובה
+                if (response.ok || response.status === 0) { // status 0 זה נורמלי ב-no-cors
+                    log('✅ הנתונים נשלחו בהצלחה!', 'success');
+                    showMessage('✅ ההתראה נשלחה בהצלחה! תקבל הודעת WhatsApp בקרוב.', 'success');
+                    return true;
+                } else {
+                    throw new Error(`שגיאת שרת: ${response.status}`);
+                }
 
             } catch (error) {
-                alert('שגיאה: הלינק לא תקין');
+                log(`❌ שגיאה בשליחה: ${error.message}`, 'error');
+                
+                // ניסיון חוזר
+                if (attempt < RETRY_ATTEMPTS) {
+                    log(`⏳ ממתין ${RETRY_DELAY/1000} שניות לפני ניסיון חוזר...`, 'info');
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                    return sendToWebhook(eventData, attempt + 1);
+                } else {
+                    showMessage('❌ לא הצלחנו לשלוח את ההתראה. אנא צור קשר עם התמיכה.', 'error');
+                    return false;
+                }
             }
         }
 
-        // Agent management
-        document.getElementById('agent-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            addAgent();
-        });
+        // ===== האזנה לאירועי Calendly =====
+        function initializeCalendlyListener() {
+            log('🔍 מאתחל מאזין לאירועי Calendly...');
 
-        function addAgent() {
-            const name = document.getElementById('new-agent-name').value;
-            const id = document.getElementById('new-agent-id').value;
-            const calendlyLink = document.getElementById('new-agent-calendly').value;
-            const phone = document.getElementById('new-agent-phone').value;
+            // האזנה לאירועים מ-Calendly
+            window.addEventListener('message', async function(event) {
+                // בדיקת מקור ההודעה
+                if (event.origin !== 'https://calendly.com') {
+                    return;
+                }
 
-            if (!name || !id || !calendlyLink) {
-                alert('נדרשים שם, זיהוי ולינק קלנדלי');
-                return;
-            }
+                try {
+                    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                    
+                    // בדיקה אם זה אירוע קביעת פגישה
+                    if (data.event === 'calendly.event_scheduled') {
+                        log('🎉 זוהתה קביעת פגישה חדשה!', 'success');
+                        
+                        // הצגת פרטי הפגישה
+                        log(`👤 שם: ${data.payload.invitee.name}`);
+                        log(`📧 אימייל: ${data.payload.invitee.email}`);
+                        log(`📅 זמן: ${new Date(data.payload.event.start_time).toLocaleString('he-IL')}`);
+                        
+                        // שליחה ל-Webhook
+                        await sendToWebhook(data.payload);
+                    }
+                    
+                    // אירועים נוספים של Calendly
+                    if (data.event === 'calendly.loaded') {
+                        log('✅ Calendly נטען בהצלחה', 'success');
+                        document.getElementById('loading-message').style.display = 'none';
+                    }
+                    
+                    if (data.event === 'calendly.event_type_viewed') {
+                        log('👀 המשתמש צופה בלוח הזמנים');
+                    }
+                    
+                    if (data.event === 'calendly.date_and_time_selected') {
+                        log('📅 המשתמש בחר תאריך ושעה');
+                    }
 
-            // Check if agent already exists
-            if (agents.find(agent => agent.id === id)) {
-                alert('סוכן עם זיהוי זה כבר קיים');
-                return;
-            }
-
-            const agent = {
-                id,
-                name,
-                calendlyLink,
-                phone,
-                createdAt: new Date().toISOString(),
-                isActive: true,
-                meetingsCount: 0
-            };
-
-            agents.push(agent);
-            localStorage.setItem('meeting_tracker_agents', JSON.stringify(agents));
-
-            // Clear form
-            document.getElementById('agent-form').reset();
-
-            // Update displays
-            updateAgentsList();
-            updateAgentSelect();
-            updateDashboard();
-            
-            addToRecentActivity(`נוסף סוכן חדש: ${name}`, 'success');
-        }
-
-        function updateAgentsList() {
-            const agentsList = document.getElementById('agents-list');
-            const agentsCount = document.getElementById('agents-count');
-            
-            agentsCount.textContent = agents.length;
-
-            if (agents.length === 0) {
-                agentsList.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <div class="text-4xl mb-2">👤</div>
-                        <p>אין סוכנים עדיין</p>
-                        <p class="text-sm mt-1">הוסף סוכן ראשון כדי להתחיל</p>
-                    </div>
-                `;
-                return;
-            }
-
-            agentsList.innerHTML = agents.map(agent => `
-                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <h4 class="font-medium text-gray-900">${agent.name}</h4>
-                            <p class="text-sm text-gray-500">ID: ${agent.id}</p>
-                            <p class="text-sm text-gray-500">${agent.calendlyLink}</p>
-                            ${agent.phone ? `<p class="text-sm text-gray-500">📞 ${agent.phone}</p>` : ''}
-                        </div>
-                        <div class="flex items-center space-x-2 space-x-reverse">
-                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                ${agent.meetingsCount || 0} פגישות
-                            </span>
-                            <button onclick="deleteAgent('${agent.id}')" class="text-red-600 hover:text-red-800 p-1">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function updateAgentSelect() {
-            const select = document.getElementById('agent-select');
-            select.innerHTML = '<option value="">בחר סוכן קיים או צור חדש</option>';
-            
-            agents.forEach(agent => {
-                const option = document.createElement('option');
-                option.value = agent.id;
-                option.textContent = `${agent.name} (${agent.id})`;
-                select.appendChild(option);
-            });
-
-            // Auto-fill when agent is selected
-            select.addEventListener('change', function() {
-                const selectedAgent = agents.find(agent => agent.id === this.value);
-                if (selectedAgent) {
-                    document.getElementById('agent-id').value = selectedAgent.id;
-                    document.getElementById('agent-name').value = selectedAgent.name;
-                    document.getElementById('original-link').value = selectedAgent.calendlyLink;
+                } catch (error) {
+                    log(`⚠️ שגיאה בעיבוד הודעה: ${error.message}`, 'error');
                 }
             });
+
+            log('✅ מאזין לאירועים פעיל ומוכן');
         }
 
-        function deleteAgent(agentId) {
-            if (confirm('האם אתה בטוח שברצונך למחוק את הסוכן?')) {
-                agents = agents.filter(agent => agent.id !== agentId);
-                localStorage.setItem('meeting_tracker_agents', JSON.stringify(agents));
-                updateAgentsList();
-                updateAgentSelect();
-                updateDashboard();
-                addToRecentActivity(`נמחק סוכן`, 'warning');
-            }
-        }
-
-        // Dashboard updates
-        function updateDashboard() {
-            document.getElementById('total-meetings').textContent = meetings.length;
-            document.getElementById('confirmed-meetings').textContent = meetings.filter(m => m.status === 'confirmed').length;
-            document.getElementById('active-agents').textContent = agents.filter(a => a.isActive).length;
-            document.getElementById('tracked-links').textContent = trackedLinks.length;
-        }
-
-        function addToRecentActivity(message, type = 'info') {
-            const activityContainer = document.getElementById('recent-activity');
-            const timestamp = new Date().toLocaleString('he-IL');
+        // ===== בדיקת תקינות המערכת =====
+        function systemCheck() {
+            log('🔧 מבצע בדיקת מערכת...');
             
-            const iconMap = {
-                success: '✅',
-                warning: '⚠️',
-                error: '❌',
-                info: 'ℹ️'
-            };
-
-            const colorMap = {
-                success: 'text-green-600',
-                warning: 'text-yellow-600', 
-                error: 'text-red-600',
-                info: 'text-blue-600'
-            };
-
-            const activityItem = `
-                <div class="flex items-center justify-between p-3 border-b border-gray-100 slide-up">
-                    <div class="flex items-center">
-                        <span class="text-lg mr-3">${iconMap[type]}</span>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">${message}</p>
-                            <p class="text-xs text-gray-500">${timestamp}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            if (activityContainer.innerHTML.includes('אין פעילות עדיין')) {
-                activityContainer.innerHTML = activityItem;
-            } else {
-                activityContainer.insertAdjacentHTML('afterbegin', activityItem);
+            // בדיקת Webhook URL
+            if (!WEBHOOK_URL || WEBHOOK_URL.includes('YOUR_WEBHOOK_ID_HERE')) {
+                log('⚠️ אזהרה: לא הוגדר Webhook URL!', 'error');
+                showMessage('⚠️ המערכת לא מוגדרת כראוי. פנה למנהל המערכת.', 'error');
+                return false;
             }
-
-            // Keep only last 10 activities
-            const activities = activityContainer.querySelectorAll('.flex');
-            if (activities.length > 10) {
-                activities[activities.length - 1].remove();
-            }
-        }
-
-        // Meetings management
-        function updateMeetingsTable() {
-            const meetingsTable = document.getElementById('meetings-table');
             
-            if (meetings.length === 0) {
-                meetingsTable.innerHTML = `
-                    <div class="text-center py-12 text-gray-500">
-                        <div class="text-4xl mb-2">📅</div>
-                        <p>אין פגישות עדיין</p>
-                        <p class="text-sm mt-1">פגישות יופיעו כאן כשלקוחות יקבעו אותן</p>
-                    </div>
-                `;
-                return;
+            // בדיקת Calendly
+            if (!window.Calendly) {
+                log('⏳ ממתין לטעינת Calendly...', 'info');
+                setTimeout(systemCheck, 1000);
+                return false;
             }
-
-            const tableHTML = `
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">לקוח</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">סוכן</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">תאריך ושעה</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">סטטוס</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">מקור</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${meetings.map(meeting => `
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">${meeting.clientName}</div>
-                                    <div class="text-sm text-gray-500">${meeting.clientEmail}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${meeting.agentName}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    ${new Date(meeting.meetingTime).toLocaleString('he-IL')}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(meeting.status)}">
-                                        ${getStatusText(meeting.status)}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${meeting.source}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-
-            meetingsTable.innerHTML = tableHTML;
-        }
-
-        function getStatusColor(status) {
-            switch(status) {
-                case 'confirmed': return 'bg-green-100 text-green-800';
-                case 'cancelled': return 'bg-red-100 text-red-800';
-                case 'pending': return 'bg-yellow-100 text-yellow-800';
-                default: return 'bg-gray-100 text-gray-800';
-            }
-        }
-
-        function getStatusText(status) {
-            switch(status) {
-                case 'confirmed': return 'מאושר';
-                case 'cancelled': return 'בוטל';
-                case 'pending': return 'ממתין';
-                default: return 'לא ידוע';
-            }
-        }
-
-        // Utility functions
-        function copyToClipboard(elementId) {
-            const element = document.getElementById(elementId);
-            element.select();
-            element.setSelectionRange(0, 99999);
-            document.execCommand('copy');
             
-            // Show feedback
-            const button = element.nextElementSibling;
-            const originalText = button.innerHTML;
-            button.innerHTML = '✅ הועתק!';
-            button.classList.add('bg-green-600');
+            log('✅ כל הבדיקות עברו בהצלחה', 'success');
+            return true;
+        }
+
+        // ===== הפעלת המערכת =====
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 המערכת מתחילה לפעול...');
             
+            // אתחול מאזין אירועים
+            initializeCalendlyListener();
+            
+            // בדיקת מערכת
+            setTimeout(systemCheck, 2000);
+            
+            // רענון אוטומטי של הwidget במקרה של בעיה
             setTimeout(() => {
-                button.innerHTML = originalText;
-                button.classList.remove('bg-green-600');
-            }, 2000);
-        }
+                if (document.getElementById('loading-message').style.display !== 'none') {
+                    log('⚠️ הטעינה לוקחת זמן רב, מרענן...', 'error');
+                    window.location.reload();
+                }
+            }, 30000);
+        });
 
-        // Debug functions
-        function simulateMeeting() {
-            const randomNames = ['דוד כהן', 'שרה לוי', 'מיכל אברהם', 'יוסי דן', 'רחל גולן'];
-            const randomEmails = ['david@example.com', 'sarah@test.co.il', 'michal@company.com'];
-            const randomAgent = agents[Math.floor(Math.random() * agents.length)];
-            
-            if (!randomAgent) {
-                alert('הוסף סוכן קודם כדי לסמלץ פגישה');
-                return;
-            }
-
-            const meeting = {
-                id: Date.now().toString(),
-                clientName: randomNames[Math.floor(Math.random() * randomNames.length)],
-                clientEmail: randomEmails[Math.floor(Math.random() * randomEmails.length)],
-                agentId: randomAgent.id,
-                agentName: randomAgent.name,
-                meetingTime: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-                status: 'confirmed',
-                source: 'סימולציה',
-                createdAt: new Date().toISOString()
-            };
-
-            meetings.push(meeting);
-            localStorage.setItem('meeting_tracker_meetings', JSON.stringify(meetings));
-            
-            updateDashboard();
-            updateMeetingsTable();
-            addToRecentActivity(`פגישה חדשה נקבעה עם ${meeting.clientName}`, 'success');
-            
-            alert('פגישה סומלצה בהצלחה!');
-        }
-
-        function clearAllData() {
-            if (confirm('האם אתה בטוח שברצונך למחוק את כל הנתונים? פעולה זו לא ניתנת לביטול.')) {
-                localStorage.removeItem('meeting_tracker_agents');
-                localStorage.removeItem('meeting_tracker_meetings');
-                localStorage.removeItem('meeting_tracker_links');
-                
-                agents = [];
-                meetings = [];
-                trackedLinks = [];
-                
-                updateDashboard();
-                updateAgentsList();
-                updateAgentSelect();
-                updateMeetingsTable();
-                
-                document.getElementById('recent-activity').innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <div class="text-4xl mb-2">📭</div>
-                        <p>אין פעילות עדיין</p>
-                        <p class="text-sm mt-1">צור לינק מעוקב כדי להתחיל</p>
-                    </div>
-                `;
-                
-                alert('כל הנתונים נמחקו בהצלחה');
-            }
-        }
-
-        function exportData() {
-            const data = {
-                agents,
-                meetings,
-                trackedLinks,
-                exportDate: new Date().toISOString()
-            };
-            
-            const dataStr = JSON.stringify(data, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `meeting-tracker-export-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-        }
-
-        function refreshMeetings() {
-            updateMeetingsTable();
-            addToRecentActivity('רשימת הפגישות רועננה', 'info');
-        }
+        // ===== טיפול בשגיאות גלובליות =====
+        window.addEventListener('error', function(event) {
+            log(`❌ שגיאה גלובלית: ${event.message}`, 'error');
+        });
     </script>
 </body>
 </html>
